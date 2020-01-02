@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
      name='L-HAPI',
      version='0.1',
-     scripts=['L-HAPI.py'] ,
+     scripts=['HAPILite.py'] ,
      author="Prajwal Niraula",
      author_email="prajwalniraula@gmail.com",
 
@@ -14,7 +14,7 @@ setuptools.setup(
      long_description=long_description,
 
      long_description_content_type="text/markdown",
-     url="https://github.com/prajwal309/L-HAPI.git",
+     url="https://github.com/prajwal309/HAPILite.git",
      packages=setuptools.find_packages(),
 
      classifiers=[

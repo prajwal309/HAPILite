@@ -2,6 +2,6 @@ HAPILite is a lighter version of hapi. It contains different function that are s
 
 TO DO LIST
 -------------------
-  1. Add multiprocessing flag and capability
+  1. Benchmark against hapi for speed and accuracy.
   2. Add errors and ways to calculate the sigma values corresponding to the absorption coefficient
   3. Add the effect of diluent such as Hydrogen and Helium

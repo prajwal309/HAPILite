@@ -11,9 +11,7 @@ from lib.PartitionFunction import BD_TIPS_2017_PYTHON
 from lib.MolecularMass import GetMolecularMass
 from lib.ReadComputeFunc import ReadData, GenerateCrossSection
 
-from numba import jit
-
-def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(0,15000,0.01), OmegaWing=25., OmegaWingHW=75.0, Profile="VOIGT", NCORES=1):
+def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(0,15000,0.01), OmegaWing=25., OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1):
     """
     Parameters
     ----------------------------------------------------------------------------
@@ -25,9 +23,15 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
 
     P: The pressure at which the cross-section is to be calculated
 
+    OmegaWing: The width of the WaveNumber for calculating the cross-section
+
+    OmegaWingHW: The full width half maximum for calculating the cross-section
+
     WN_Grid: The range of wavenumber over which to calculcate the cross-section
 
     Profile: Can be Doppler, Lorentz or Voigt.
+
+    NCORES: Use the number of cores for calculating the cross-section.
     ----------------------------------------------------------------------------
     """
 
@@ -128,62 +132,4 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
         for task in Tasks:
             Xsect+=task.get()
         return Xsect
-
-
-
-
-    i = 0
-    Xsect = np.zeros(len(Omegas))
-    NLINES = len(LineCenterDB)
-    while i<NLINES:
-        LineCenter = LineCenterDB[i]
-        LowerStateEnergy = LowerStateEnergyDB[i]
-
-
-        #Calculate the temperature dependence of the gamma
-        Gamma0 = GammaSelf[i]
-        Value = Gamma0*P/Pref*(Tref/Temp)**TempRatioPower[i]
-        Gamma0=Value
-
-
-        #The Doppler Broadening coefficients
-        GammaD = np.sqrt(2*cBolts*Temp*np.log(2)/m/cc**2)*LineCenterDB[i]
-
-        #Scale the line intensity with the temperature
-        ch = np.exp(-const_R*LowerStateEnergy/Temp)*(1-np.exp(-const_R*LineCenter/Temp))
-        zn = np.exp(-const_R*LowerStateEnergy/Tref)*(1-np.exp(-const_R*LineCenter/Tref))
-        LineIntensity = LineIntensityDB[i]*SigmaTref/SigmaT*ch/zn
-
-
-        OmegaWingF = max(OmegaWing,OmegaWingHW*Gamma0,OmegaWingHW*GammaD)
-
-        #Find the range to calculate the value:::
-        BoundIndexLower = bisect(Omegas,LineCenterDB[i]-OmegaWingF)
-        BoundIndexUpper = bisect(Omegas,LineCenterDB[i]+OmegaWingF)
-
-        lineshape_vals = LINE_PROFILE(LineCenter,GammaD,Gamma0,Omegas[BoundIndexLower:BoundIndexUpper])
-        Xsect[BoundIndexLower:BoundIndexUpper] += factor*LineIntensity*lineshape_vals
-        i+=1
-
     return Xsect
-
-
-
-
-
-WaveNumber = np.arange(0,10000,0.001)
-
-import time
-
-StartTime = time.time()
-CrossSection =  CalcCrossSection("CO2",Temp=1000.0,WN_Grid=WaveNumber, Profile="Doppler", NCORES=-1)
-StopTime = time.time()
-
-print("The difference between the start and the stop time is given by:", StopTime - StartTime)
-
-import matplotlib.pyplot as plt
-
-plt.figure()
-plt.plot(WaveNumber, CrossSection, "k-")
-plt.title("L-HAPI")
-plt.show()

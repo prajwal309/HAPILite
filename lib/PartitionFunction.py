@@ -1,6 +1,5 @@
 from .PartitionData import *
 
-#def AtoB(aa,bb,A,B,npt)
 def AtoB(aa,A,B,npt):
 #***************************
 #...LaGrange 3- and 4-point interpolation
