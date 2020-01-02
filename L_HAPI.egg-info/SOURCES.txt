@@ -1,6 +1,0 @@
-HAPILite.py
-setup.py
-L_HAPI.egg-info/PKG-INFO
-L_HAPI.egg-info/SOURCES.txt
-L_HAPI.egg-info/dependency_links.txt
-L_HAPI.egg-info/top_level.txt
