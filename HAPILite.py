@@ -55,10 +55,13 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
 
     #Temperature Dependence of Gamma0
     TempRatioPower = np.array([float(Item[56:59]) for Item in Data])
+    Shift0DB = np.float([float(Item[]) for Item in Data])
+
+    #Replace nan with zero
 
     NLINES = len(LineCenterDB)
     #Units --- Not HITRAN Units
-    factor = (P/9.869233e-7)/(cBolts*Temp) # CGS np.arange(0,10000,0.01)
+    factor = (P/9.869233e-7)/(cBolts*Temp) # 
 
     #Calculate the partition Function
     SigmaT = BD_TIPS_2017_PYTHON(MoleculeNumberDB,IsoNumberDB,Temp)
@@ -92,10 +95,9 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
     TempRatioPower = TempRatioPower[SelectIndex]
 
 
-    #This can be made faster by multiple threading
-
-    print(NCORES)
+    #Implemented multithread calculation
     if NCORES==1 or NLINES<5000:
+        print("Using single core of generating cross-section")
         Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor]
         Xsect = GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, LINE_PROFILE, Params)
         return Xsect
@@ -105,6 +107,7 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
         elif NCORES>1.99:
             NUMCORES = int(NCORES)
 
+        print("Using %d cores for generating cross-section" %NUMCORES)
         CPU_Pool = mp.Pool(NUMCORES)
         Tasks = []
 

@@ -42,6 +42,8 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
         LowerStateEnergy = LowerStateEnergyDB[i]
 
 
+        #Calculate the line shift
+
         #Calculate the temperature dependence of the gamma
         Gamma0 = GammaSelf[i]*P/Pref*(Tref/Temp)**TempRatioPower[i]
 

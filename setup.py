@@ -10,7 +10,7 @@ setuptools.setup(
      author="Prajwal Niraula",
      author_email="prajwalniraula@gmail.com",
 
-     description="reduced but fast HAPI version for generating the cross-section",
+     description="reduced but faster HAPI version for generating atomic cross-sections",
      long_description=long_description,
 
      long_description_content_type="text/markdown",
@@ -18,9 +18,9 @@ setuptools.setup(
      packages=setuptools.find_packages(),
 
      classifiers=[
-         "Programming Language :: Python :: 3",
+         "Programming Language :: Python :: >3.5",
          "License :: MIT License",
-         "Operating System :: Tested in LINUX",
+         "Operating System :: LINUX",
 
      ],
 
