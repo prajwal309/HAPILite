@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 TempValue = 1000.0
 P_Value = 1.0
-OmegaRangeValue = [0, 20000]
+OmegaRangeValue = [0, 5000]
 WaveNumber = np.arange(OmegaRangeValue[0], OmegaRangeValue[1], 0.01)
 Env= {'T': TempValue, 'p': P_Value}
 
@@ -33,8 +33,8 @@ print("The time difference is::", TimeTakenHapi - TimeTakenHAPILite)
 
 fig, (ax0, ax1) = plt.subplots(figsize=(14,6), ncols=1, nrows=2, sharex=True)
 
-ax0.plot(nu_hapi_Doppler, abs_hapi_Doppler, "ko-", label="Old HAPI" )
-ax0.plot(WaveNumber, CrossSectionDoppler, "ro:", label="HAPI Lite" )
+ax0.plot(nu_hapi_Doppler, abs_hapi_Doppler, "k.", label="Old HAPI" )
+ax0.plot(WaveNumber, CrossSectionDoppler, "r-", linewidth=0.1, label="HAPI Lite" )
 ax0.set_xlabel("WaveNumber (per cm)")
 ax0.set_ylabel("Cross-Section (per cm)")
 ax0.legend(loc=1)
@@ -49,8 +49,8 @@ plt.close()
 
 fig, (ax0, ax1) = plt.subplots(figsize=(14,6), ncols=1, nrows=2, sharex=True)
 
-ax0.plot(nu_hapi_Voigt, abs_hapi_Voigt, "ko-", label="Old HAPI" )
-ax0.plot(WaveNumber, CrossSectionVoigt, "ro:", label="HAPI Lite" )
+ax0.plot(nu_hapi_Voigt, abs_hapi_Voigt, "k.", label="Old HAPI" )
+ax0.plot(WaveNumber, CrossSectionVoigt, "r-",linewidth=0.1, label="HAPI Lite" )
 ax0.set_xlabel("WaveNumber (per cm)")
 
 ax0.set_ylabel("Cross-Section (per cm)")
