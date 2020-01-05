@@ -11,7 +11,7 @@ from lib.PartitionFunction import BD_TIPS_2017_PYTHON
 from lib.MolecularMass import GetMolecularMass
 from lib.ReadComputeFunc import ReadData, GenerateCrossSection
 
-def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(0,15000,0.01), OmegaWing=25., OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1):
+def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(0,15000,0.01), OmegaWing=0.0, OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1):
     """
     Parameters
     ----------------------------------------------------------------------------
@@ -55,13 +55,13 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
 
     #Temperature Dependence of Gamma0
     TempRatioPower = np.array([float(Item[56:59]) for Item in Data])
-    Shift0DB = np.float([float(Item[]) for Item in Data])
+    #Shift0DB = np.float([float(Item[]) for Item in Data])
 
     #Replace nan with zero
 
     NLINES = len(LineCenterDB)
     #Units --- Not HITRAN Units
-    factor = (P/9.869233e-7)/(cBolts*Temp) # 
+    factor = (P/9.869233e-7)/(cBolts*Temp) #
 
     #Calculate the partition Function
     SigmaT = BD_TIPS_2017_PYTHON(MoleculeNumberDB,IsoNumberDB,Temp)

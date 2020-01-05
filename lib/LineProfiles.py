@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+from scipy.special import wofz
 
 
 #Define the constant
@@ -9,11 +10,6 @@ FinalConst = cSqrtPI*cSqrtLN2
 
 cLn2 = 0.6931471805599
 cSqrtLn2divSqrtPi = 0.469718639319144059835
-
-A = np.array([-1.2150, -1.3509, -1.2150, -1.3509])
-B = np.array([1.2359, 0.3786, -1.2359, -0.3786])
-C = np.array([-0.3085, 0.5906, -0.3085, 0.5906])
-D = np.array([0.0210, -1.1858, -0.0210, 1.1858])
 
 
 def PROFILE_VOIGT(sg0,GamD,Gam0,sg):
@@ -25,12 +21,13 @@ def PROFILE_VOIGT(sg0,GamD,Gam0,sg):
     #   Gam0: Speed-averaged line-width in cm-1 (Input).
     #   sg: Current WaveNumber of the Computation in cm-1 (Input).
     """
-    X = (sg- sg0)*2*cSqrtLN2/GamD
-    X = np.atleast_1d(X)[..., np.newaxis]
-    Y = Gam0*cSqrtLN2/GamD
-    Y = np.atleast_1d(Y)[..., np.newaxis]
-    V = np.sum((C*(Y - A) + D*(X-B))/((Y-A)**2 + (X-B)**2), axis=-1)
-    return (Gam0*FinalConst/GamD)*V
+    sg = sg - sg0
+    sigma = GamD/np.sqrt(2 * np.log(2))
+    return np.real(wofz(( sg + 1j*Gam0)/sigma/np.sqrt(2))) / sigma\
+                                                           /np.sqrt(2*np.pi)
+
+
+
 
 
 def PROFILE_LORENTZ(sg0,GamD,Gam0,sg):
