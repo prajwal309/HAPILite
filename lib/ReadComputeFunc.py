@@ -41,8 +41,7 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
         LineCenter = LineCenterDB[i]
         LowerStateEnergy = LowerStateEnergyDB[i]
 
-
-        #Calculate the line shift
+        #Calculate the line shift for hydrogen and helium
 
         #Calculate the temperature dependence of the gamma
         Gamma0 = GammaSelf[i]*P/Pref*(Tref/Temp)**TempRatioPower[i]
@@ -58,8 +57,8 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
         OmegaWingF = max(OmegaWing,OmegaWingHW*Gamma0,OmegaWingHW*GammaD)
 
         #Find the range to calculate the value:::
-        BoundIndexLower = bisect(Omegas,LineCenterDB[i]-OmegaWingF)
-        BoundIndexUpper = bisect(Omegas,LineCenterDB[i]+OmegaWingF)
+        BoundIndexLower = bisect(Omegas,LineCenter-OmegaWingF)
+        BoundIndexUpper = bisect(Omegas,LineCenter+OmegaWingF)
 
         lineshape_vals = LINE_PROFILE(LineCenter,GammaD,Gamma0,Omegas[BoundIndexLower:BoundIndexUpper])
         Xsect[BoundIndexLower:BoundIndexUpper] += factor*LineIntensity*lineshape_vals
