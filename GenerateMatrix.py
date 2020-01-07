@@ -43,25 +43,25 @@ WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
 WaveNumberStop= 1./(LowWavelength*1.e-7)            #in per cm
 WaveNumberRange = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
 
-print("the wavenumber start is given by::", WaveNumberStart)
-print("The wavenumber stop is given by::", WaveNumberStop)
-print("The wavenumber stop is given by::", WaveNumberRange)
-input("Wait here...")
+
+print("The range of temperature is given by::", TempRange)
+print("The range of pressure is given by::", P_Range)
+
 
 
 for Molecule in MoleculeList:
+    print("Starting Molecule::", Molecule)
+    input("Benchmark this::")
+    StartTime = time()
     #initiate the saving matrix for each case
     SigmaMatrix = np.empty((len(TempRange),len(P_Range),len(WaveNumberRange)))*np.nan
-    for TempCount, Temp in enumerate(TempRange):
-            for PCount, P in enumerate(P_Range):
-                print("The name of the molecule is given by::", Molecule)
-                print("The value of the temperature is given by::", Temp)
-                print("The value of the pressure is given by::", P)
-                continue
-                #Calculate the cross-section for the different
-                SigmaMatrix[TempCount, PCount, :] = CalcCrossSection(Molecule, Temp=TempValue, P = P_Value, WN_Grid=WaveNumber,     \
-                                                    Profile="Voigt", OmegaWing=3.0, OmegaWingHW=0.0, NCORES=-1)
-
+    for TempCount, TempValue in enumerate(TempRange):
+            for PCount, P_Value in enumerate(P_Range):
+                print(TempCount, PCount)
+                SigmaMatrix[TempCount, PCount, :] = CalcCrossSection(Molecule, Temp=TempValue, P = P_Value, WN_Grid=WaveNumberRange,   \
+                                                    Profile="Voigt", OmegaWing=25.0, OmegaWingHW=0.0, NCORES=-1)
     #Now save the file
     np.save("DataMatrix/"+Molecule+".npy", SigmaMatrix)
     np.savetxt("DataMatrix/WN_"+str(WaveCount)+"_"+str(WaveCount+1)+".txt", WaveNumberResults)
+
+    print("For %s, time taken is %4.2" %(Molecule, time() -StartTime))

@@ -48,13 +48,13 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
     #Read the important parameters from the file
     LineCenterDB = np.array([float(Item[3:15]) for Item in Data])
     LineIntensityDB = np.array([float(Item[16:26]) for Item in Data])
-    LowerStateEnergyDB = np.array([float(Item[46:56]) for Item in Data])
+    LowerStateEnergyDB = np.array([float(Item[46:56].replace("-","")) for Item in Data])
     GammaSelf = np.array([float(Item[40:46]) for Item in Data])
 
     ErrorIndex = np.array([int(Item[127:134]) for Item in Data ])
 
     #Temperature Dependence of Gamma0
-    TempRatioPower = np.array([float(Item[56:59]) for Item in Data])
+    TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
 
     #No shift are expected due to self broadening...
     #Shift0DB = np.float([float(Item[]) for Item in Data])
@@ -84,7 +84,7 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
     Omegas = WN_Grid[:]
 
 
-    Tolerance = 3.0
+    Tolerance = max(OmegaWing, OmegaWingHW*0.25)
     SelectIndex = np.logical_and(LineCenterDB>min(Omegas)-Tolerance, LineCenterDB<max(Omegas)+Tolerance)
 
 
@@ -97,8 +97,8 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
     TempRatioPower = TempRatioPower[SelectIndex]
 
 
-    #Implemented multithread calculation
-    if NCORES==1 or NLINES<5000:
+    #how may threads to implement
+    if NCORES==1:
         print("Using single core of generating cross-section")
         Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor]
         Xsect = GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, LINE_PROFILE, Params)

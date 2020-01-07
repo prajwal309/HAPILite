@@ -62,5 +62,22 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
 
         lineshape_vals = LINE_PROFILE(LineCenter,GammaD,Gamma0,Omegas[BoundIndexLower:BoundIndexUpper])
         Xsect[BoundIndexLower:BoundIndexUpper] += factor*LineIntensity*lineshape_vals
+        #if BoundIndexUpper-BoundIndexLower>0.1:
+        #    print("\n\n")
+        #    print("#"*25)
+        #    print("LineCenterDB Lite::", LineCenterDB[i])
+        #    print("LowerStateEnergyDB Lite::", LowerStateEnergy)
+        #    print("LineIntensityDB Lite::",LineIntensityDB[i])
+        #    print("LineIntensity Scaled::", LineIntensity)
+        #    print("Gamma0DB:",GammaSelf[i])
+        #    print("The temperature::",Temp)
+        #    print("Tref",Tref)
+        #    print("p", P)
+        #    print("pref", Pref)
+        #    print("OmegaWingF", OmegaWingF)
+        #    print("Gamma0::", Gamma0)
+        #    print("GammaD::", GammaD)
+        #    print("Factor::", factor)
+        #    print("The temp power ratio is::",TempRatioPower[i])
         i+=1
     return Xsect
