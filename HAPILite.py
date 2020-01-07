@@ -51,10 +51,12 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
     LowerStateEnergyDB = np.array([float(Item[46:56]) for Item in Data])
     GammaSelf = np.array([float(Item[40:46]) for Item in Data])
 
-    #ErrorIndex = np.array([int(Item[]) for Item in Data ])
+    ErrorIndex = np.array([int(Item[127:134]) for Item in Data ])
 
     #Temperature Dependence of Gamma0
     TempRatioPower = np.array([float(Item[56:59]) for Item in Data])
+
+    #No shift are expected due to self broadening...
     #Shift0DB = np.float([float(Item[]) for Item in Data])
 
     #Replace nan with zero

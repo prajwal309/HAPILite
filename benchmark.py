@@ -1,6 +1,6 @@
 import numpy as np
 import time
-import ModifiedHapi as hapi
+import hapi
 from HAPILite import CalcCrossSection
 import matplotlib.pyplot as plt
 
