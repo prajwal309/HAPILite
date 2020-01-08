@@ -151,19 +151,21 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296, P=1, WN_Grid=np
         #Considering the error
         if Err.upper() == "0SIG":
             ErrorSTD = 0.0
-        elif Err.upper() == "1SIG":
-            ErrorSTD = 1.0
-        elif Err.upper() == "2SIG":
-            ErrorSTD = 2.0
-        elif Err.upper() == "-1SIG":
+        elif "-1SIG" in Err.upper():
             ErrorSTD = -1.0
-        elif Err.upper() == "-2SIG":
+        elif "-2SIG" in Err.upper():
             ErrorSTD = -2.0
+        elif "1SIG" in Err.upper():
+            ErrorSTD = 1.0
+        elif "2SIG" in Err.upper():
+            ErrorSTD = 2.0
         else:
-            assert 1==0, "The values allowed for Err are 0SIG, 1SIG, 2SIG, -1SIG, -2SIG. "
+            print("The value of Err is given by:", Err)
+            raise Exception("Error in HAPILite.py. The values allowed for Err are 0SIG, 1SIG, 2SIG, -1SIG, -2SIG.")
 
         #Unpack the database
         MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray = Database
+        ErrorValues = MapError(ErrorArray)
 
         #Replace nan with zero
 
@@ -200,6 +202,7 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296, P=1, WN_Grid=np
         LowerStateEnergyDB = LowerStateEnergyDB[SelectIndex]
         GammaSelf = GammaSelf[SelectIndex]*(1.0+ErrorValues[SelectIndex,3]*ErrorSTD)
         TempRatioPower = TempRatioPower[SelectIndex]*(1.0+ErrorValues[SelectIndex,4]*ErrorSTD)
+
 
 
         #how may threads to implement

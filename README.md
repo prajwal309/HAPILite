@@ -9,5 +9,7 @@ HAPILite is a lighter version of hapi. It contains different function that are s
 
 TO DO LIST
 -------------------
-  1. Use DataMatrix to generate the database that can be used with the transmission spectra.
-  2. Add the effect of diluent such as Hydrogen and Helium effects on the broadening, and the shift where the parameters are unavailable.
+  1. Use DataMatrix to generate the database to be used into the transmission spectra with the transmission spectra.
+  2. Write a batch script to generate the cross-sections from beginning to end
+  2. Check the generated the cross-section against different
+  3. Add the effect of diluent such as Hydrogen and Helium effects on the broadening, and the shift where the parameters are unavailable.

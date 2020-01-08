@@ -39,8 +39,8 @@ def ReadData(MoleculeName, Location="data/"):
     #Temperature Dependence of Gamma0
     TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
 
-    #The value of the error values are
-    ErrorArray = np.array([int(Item[127:134]) for Item in Data ])
+    #The value of the error values. Keep them as string to preserve 0 at the beginning.
+    ErrorArray = np.array([Item[127:133] for Item in Data])
 
     return MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray
 

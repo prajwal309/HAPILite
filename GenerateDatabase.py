@@ -6,19 +6,19 @@ import os
 #from numba import jit, njit
 
 
-#parse the parameters.dat
-Data = [f.split(":") for f in open("Parameters.ini",'r+')][1:]
+#parse the parameters.ini which contains the information
+Data = [f.split(":") for f in open("CrossSectionParams/Parameters.ini",'r+')][1:]
 Values = [Item[1].split("#")[0] for Item in Data]
 
 
 #Load the parameters for creating
-TempStart = float(Values[0])                                                     #Step size of the temperature
-TempStop = float(Values[1])                                                     #Step size of the temperature
-TempStep = float(Values[2])                                                     #Step size of the temperature
+TempStart = float(Values[0])    #Step size of the temperature
+TempStop = float(Values[1])     #Step size of the temperature
+TempStep = float(Values[2])     #Step size of the temperature
 
-P_Start = float(Values[3])
-P_Stop = float(Values[4])
-P_Step = float(Values[5])                                                       #Step size of the pressure
+expP_Start = float(Values[3])
+expP_Stop = float(Values[4])
+expP_Step = float(Values[5])                                                       #Step size of the pressure
 
 
 Broadener = Values[6].replace(" ","")                                           #Broadening either self or air at this point
@@ -29,15 +29,21 @@ WN_Resolution = float(Values[10])                                        #Resolu
 LineShapeProfile = Values[11].replace(" ","")                                    #Voigt profile by default
 NumChunks = int(Values[12].replace(" ",""))                                      #Number of chunks for the wavenumber
 MoleculeList = Values[13].split(",")                                             #Get the list of Molecular species
+Cores = int(Values[14])                                                          #Number of cores to be used
 
 MoleculeList = [Item.replace(" ", "").replace("\t","") for Item in MoleculeList]
 
 
-TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)             #Temperature in K
-#P_Range = np.arange(P_Start, P_Stop+P_Step, P_Step)        #log10(Pressure) in atm
-P_Range = np.array([7.0,6.0,5.6,5.2,4.9,4.6,4.3,4.0,3.7,3.4,3.0,2.0,1.0,0.0,-1.0,-2.0,-3.0])-5.0
+TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)                    #Temperature in K
+expP_Range = np.arange(expP_Start, expP_Stop-expP_Step, -expP_Step)             #Pressure in log(P) atm
+
+WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
+WaveNumberStop= 1./(LowWavelength*1.e-7)            #in per cm
+WaveNumberRange = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
 
 
+print("The range of temperature is given by::", TempRange)
+print("The range of pressure is given by::", expP_Range)
 
 
 WaveNumberStart = 1./(HighWavelength*1.e-7)         #in per cm
@@ -78,33 +84,9 @@ WaveNumberRanges = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
 print("Removing the data...")
 
 for Molecule in MoleculeList:
-    #There is only
 
-    FileList = np.array(FileList)[np.argsort(Index)]
-    StartPoint = WaveNumberStart
+    #Read the file to 
 
-    print("The files after arranged file list is::")
-    print(FileList)
-
-    #Generate a file per molecule
-    X,Y,Z = len(TempRange), len(P_Range), len(Wavelength_LR)
-    print("The value of X is given::", X)
-    print("The value of Y is given::", Y)
-
-    input("Crash here")
-
-    MoleculeMatrix = np.zeros((X,Y,Z))
-
-    for FileCount,File in enumerate(FileList):
-        WaveNumberIndex = np.logical_and(WaveNumber_LR>WaveNumberRanges[FileCount], WaveNumber_LR<WaveNumberRanges[FileCount+1])
-        SelectedWaveNumber = WaveNumber_LR[WaveNumberIndex]
-
-        Data = np.load(File)
-
-        #Now generate the right cross section
-        m, n, k = np.shape(Data)
-
-        print("The name of the filecount is::", FileCount)
 
         for OuterCounter in range(m):
             for InnerCounter in range(n):
