@@ -9,7 +9,5 @@ HAPILite is a lighter version of hapi. It contains different function that are s
 
 TO DO LIST
 -------------------
-  1. Mapping error at +1sigma and -1sigma value of the absorption coefficient.
-  2. Optimize reading of the database. Have a function to initiate reading a molecule data. Process Data added in ReadComputeFunc.py
-  3. Use DataMatrix to generate the database that can be used with the transmission spectra.
-  4. Add the effect of diluent such as Hydrogen and Helium effects on the broadening
+  1. Use DataMatrix to generate the database that can be used with the transmission spectra.
+  2. Add the effect of diluent such as Hydrogen and Helium effects on the broadening, and the shift where the parameters are unavailable.

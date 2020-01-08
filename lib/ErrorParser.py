@@ -31,7 +31,6 @@ def MapError(ErrorArray):
     RowIndex = 0
     while RowIndex<len(ErrorArray):
         ErrorValue = str(ErrorArray[RowIndex])
-        print("The error value is given by::", ErrorValue)
         Position = 0
         while(Position<6):
             Item = int(ErrorValue[Position:Position+1])

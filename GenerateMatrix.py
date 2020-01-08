@@ -6,6 +6,7 @@ import numpy as np
 from time import time
 import os
 from HAPILite import CalcCrossSection
+from lib.ReadComputeFunc import ReadData
 
 
 #parse the parameters.ini which contains the information
@@ -52,6 +53,7 @@ print("The range of pressure is given by::", expP_Range)
 for Molecule in MoleculeList:
     print("\n\n Starting Molecule::", Molecule)
     StartTime = time()
+    Database = ReadData(Molecule, Location="data/")
     #initiate the saving matrix for each case
     SigmaMatrix = np.empty((len(TempRange),len(expP_Range),len(WaveNumberRange)))*np.nan
     for TempCount, TempValue in enumerate(TempRange):
@@ -60,7 +62,7 @@ for Molecule in MoleculeList:
                 P_Value = 10**expPValue
                 print("Temperature:", TempValue)
                 print("Pressure:", P_Value)
-                SigmaMatrix[TempCount, PCount, :] = CalcCrossSection(Molecule, Temp=TempValue, P = P_Value, WN_Grid=WaveNumberRange,   \
+                SigmaMatrix[TempCount, PCount, :] = CalcCrossSection(Database, Temp=TempValue, P = P_Value, WN_Grid=WaveNumberRange,   \
                                                     Profile="Voigt", OmegaWing=100.0, OmegaWingHW=0.0, NCORES=Cores)
     #Now save the file
     np.save("DataMatrix/"+Molecule+".npy", SigmaMatrix)

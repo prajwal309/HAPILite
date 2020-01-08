@@ -9,10 +9,10 @@ from lib.Constants import *
 from lib.LineProfiles import PROFILE_DOPPLER, PROFILE_LORENTZ, PROFILE_VOIGT
 from lib.PartitionFunction import BD_TIPS_2017_PYTHON
 from lib.MolecularMass import GetMolecularMass
-from lib.ReadComputeFunc import ReadData, GenerateCrossSection
+from lib.ReadComputeFunc import GenerateCrossSection
 from lib.ErrorParser import MapError
 
-def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(333.33,33333.33,0.01), OmegaWing=0.0, OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1):
+def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(333.33,33333.33,0.01), OmegaWing=0.0, OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1):
     """
     Parameters
     ----------------------------------------------------------------------------
@@ -36,29 +36,10 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
     ----------------------------------------------------------------------------
     """
 
-    #Read the data from the provided path
-    if len(DataPath)>0.5:
-        Data = ReadData(MoleculeName, DataPath)
-    else:
-        Data = ReadData(MoleculeName)   #By default look at the data folder
 
+    MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray = Database
 
-    MoleculeNumberDB = int(Data[0][0:2].replace(" ",""))
-    IsoNumberDB = int(Data[0][2:3].replace(" ",""))
-
-    #Read the important parameters from the file
-    LineCenterDB = np.array([float(Item[3:15]) for Item in Data])
-    LineIntensityDB = np.array([float(Item[16:26]) for Item in Data])
-    LowerStateEnergyDB = np.array([float(Item[46:56].replace("-","")) for Item in Data])
-    GammaSelf = np.array([float(Item[40:46]) for Item in Data])
-
-    #Temperature Dependence of Gamma0
-    TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
-
-    #No shift are expected due to self broadening...
-    #Shift0DB = np.float([float(Item[]) for Item in Data])
-
-    #Replace nan with zero
+    #check for nans in the values
 
     NLINES = len(LineCenterDB)
     #Units --- Not HITRAN Units
@@ -141,7 +122,7 @@ def CalcCrossSection(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.aran
 
 
 
-def CalcCrossSectionWithError(MoleculeName, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(0,15000,0.01), OmegaWing=0.0, OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1, Err="0Sig"):
+def CalcCrossSectionWithError(Database, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(0,15000,0.01), OmegaWing=0.0, OmegaWingHW=75.0, Profile="VOIGT", NCORES=-1, Err="0Sig"):
         """
         Parameters
         ----------------------------------------------------------------------------
@@ -169,46 +150,20 @@ def CalcCrossSectionWithError(MoleculeName, DataPath = "", Temp=296, P=1, WN_Gri
 
         #Considering the error
         if Err.upper() == "0SIG":
-            ErrorValue = 0.0
+            ErrorSTD = 0.0
         elif Err.upper() == "1SIG":
-            ErrorValue = 1.0
+            ErrorSTD = 1.0
         elif Err.upper() == "2SIG":
-            ErrorValue = 2.0
+            ErrorSTD = 2.0
         elif Err.upper() == "-1SIG":
-            ErrorValue = -1.0
+            ErrorSTD = -1.0
         elif Err.upper() == "-2SIG":
-            ErrorValue = -2.0
+            ErrorSTD = -2.0
         else:
             assert 1==0, "The values allowed for Err are 0SIG, 1SIG, 2SIG, -1SIG, -2SIG. "
 
-        #Read the data from the provided path
-        if len(DataPath)>0.5:
-            Data = ReadData(MoleculeName, DataPath)
-        else:
-            Data = ReadData(MoleculeName)   #By default look at the data folder
-
-
-        MoleculeNumberDB = int(Data[0][0:2].replace(" ",""))
-        IsoNumberDB = int(Data[0][2:3].replace(" ",""))
-
-        #Read the important parameters from the file
-        LineCenterDB = np.array([float(Item[3:15]) for Item in Data])
-        LineIntensityDB = np.array([float(Item[16:26]) for Item in Data])
-        LowerStateEnergyDB = np.array([float(Item[46:56].replace("-","")) for Item in Data])
-        GammaSelf = np.array([float(Item[40:46]) for Item in Data])
-
-        ErrorArray = np.array([int(Item[127:134]) for Item in Data ])
-        ErrorValues = MapError(ErrorArray)
-        print("The first value of error value is given by:::", ErrorValues[0])
-
-        input("Crash here")
-
-
-        #Temperature Dependence of Gamma0
-        TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
-
-        #No shift are expected due to self broadening...
-        #Shift0DB = np.float([float(Item[]) for Item in Data])
+        #Unpack the database
+        MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray = Database
 
         #Replace nan with zero
 
@@ -239,13 +194,12 @@ def CalcCrossSectionWithError(MoleculeName, DataPath = "", Temp=296, P=1, WN_Gri
         SelectIndex = np.logical_and(LineCenterDB>min(Omegas)-Tolerance, LineCenterDB<max(Omegas)+Tolerance)
 
 
-
         #Now slice the range
-        LineCenterDB = LineCenterDB[SelectIndex]
-        LineIntensityDB = LineIntensityDB[SelectIndex]
+        LineCenterDB = LineCenterDB[SelectIndex]+ErrorValues[SelectIndex,0]*ErrorSTD
+        LineIntensityDB = LineIntensityDB[SelectIndex]*(1.0+ErrorValues[SelectIndex,1]*ErrorSTD)
         LowerStateEnergyDB = LowerStateEnergyDB[SelectIndex]
-        GammaSelf = GammaSelf[SelectIndex]
-        TempRatioPower = TempRatioPower[SelectIndex]
+        GammaSelf = GammaSelf[SelectIndex]*(1.0+ErrorValues[SelectIndex,3]*ErrorSTD)
+        TempRatioPower = TempRatioPower[SelectIndex]*(1.0+ErrorValues[SelectIndex,4]*ErrorSTD)
 
 
         #how may threads to implement

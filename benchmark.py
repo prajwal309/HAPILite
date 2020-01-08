@@ -2,16 +2,17 @@ import numpy as np
 import time
 import hapi
 from HAPILite import CalcCrossSection
+from lib.ReadComputeFunc import ReadData
 import matplotlib.pyplot as plt
 
 
-Molecule = "N2"
+Molecule = "H2"
 TempValue = 900.0
-P_Value = 1.0
+P_Value = 10.0
 
 #TempValue = 1000.0
 #P_Value = 10.0
-OmegaWingValue = 0.1
+OmegaWingValue = 100.0
 OmegaRangeValue = [333.333,33333.33333]
 WaveNumber = np.arange(OmegaRangeValue[0], OmegaRangeValue[1]+0.01, 0.01)
 Env= {'T': TempValue, 'p': P_Value}
@@ -31,8 +32,11 @@ print("The time taken for HAPI is::",TimeTakenHapi)
 print("\n"*10)
 print("*"*25)
 StartTime = time.time()
-CrossSectionDoppler =  CalcCrossSection(Molecule,Temp=TempValue,P = P_Value, WN_Grid=WaveNumber, Profile="Doppler", OmegaWing=OmegaWingValue, OmegaWingHW=0.0, NCORES=1)
-CrossSectionVoigt =  CalcCrossSection(Molecule,Temp=TempValue, P = P_Value, WN_Grid=WaveNumber, Profile="Voigt", OmegaWing=OmegaWingValue, OmegaWingHW=0.0, NCORES=1)
+print("Started")
+Database = ReadData(Molecule, Location="data/")
+print("Starting the calculation of the cross-section")
+CrossSectionDoppler =  CalcCrossSection(Database,Temp=TempValue,P = P_Value, WN_Grid=WaveNumber, Profile="Doppler", OmegaWing=OmegaWingValue, OmegaWingHW=0.0, NCORES=1)
+CrossSectionVoigt =  CalcCrossSection(Database,Temp=TempValue, P = P_Value, WN_Grid=WaveNumber, Profile="Voigt", OmegaWing=OmegaWingValue, OmegaWingHW=0.0, NCORES=1)
 TimeTakenHAPILite = time.time() - StartTime
 print("The time taken by HAPI Lite is::", TimeTakenHAPILite)
 

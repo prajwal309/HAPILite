@@ -26,19 +26,38 @@ def ReadData(MoleculeName, Location="data/"):
 
     assert np.sum(SelectIndex)==1, "No files found for the molecule"
 
-    DataContent = open(DataFiles[SelectIndex][0],'r').readlines()
+    Data = open(DataFiles[SelectIndex][0],'r').readlines()
+    MoleculeNumberDB = int(Data[0][0:2].replace(" ",""))
+    IsoNumberDB = int(Data[0][2:3].replace(" ",""))
 
-    return DataContent
+    #Read the important parameters from the file
+    LineCenterDB = np.array([float(Item[3:15]) for Item in Data])
+    LineIntensityDB = np.array([float(Item[16:26]) for Item in Data])
+    LowerStateEnergyDB = np.array([float(Item[46:56].replace("-","")) for Item in Data])
+    GammaSelf = np.array([float(Item[40:46]) for Item in Data])
 
+    #Temperature Dependence of Gamma0
+    TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
 
-def ProcessData(Data):
-    """
-    Process the data just for the case of the planet.
-    """
+    #The value of the error values are
+    ErrorArray = np.array([int(Item[127:134]) for Item in Data ])
+
+    return MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray
+
 
 
 def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, LINE_PROFILE, Params):
-
+    """
+    Parameters
+    --------------------------------------
+    Omega: The wavegrid of the WaveNumber
+    LineCenterDB: The line center from the HITRAN database
+    LineIntensityDB: The line intensity from the HITRAN database
+    LowerStateEnergyDB: LowerStateEnergyDB from lower state energy
+    GammaSelf: The self broadening parameters
+    TempRatioPower: Parameter for scaling the self broadening parameters in temperature
+    LINE_PROFILE: PROFILE_VOIGT, PROFILE_DOPPLER, PROFILE_LORENTZ are the
+    """
     P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor = Params
     i = 0
     Xsect = np.zeros(len(Omegas))
