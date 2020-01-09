@@ -19,9 +19,9 @@ TempStart = float(Values[0])    #Step size of the temperature
 TempStop = float(Values[1])     #Step size of the temperature
 TempStep = float(Values[2])     #Step size of the temperature
 
-expP_Start = float(Values[3])
-expP_Stop = float(Values[4])
-expP_Step = float(Values[5])                                                       #Step size of the pressure
+expP_Start = float(Values[3])   #The largest log10(pressure) in atm
+expP_Stop = float(Values[4])    #The smallest log10(pressure) in atm
+expP_Step = float(Values[5])    #Step size of the pressure
 
 
 Broadener = Values[6].replace(" ","")                                           #Broadening either self or air at this point
@@ -30,14 +30,11 @@ LowWavelength = float(Values[8])                                                
 HighWavelength = float(Values[9])                                               #Longest Wavelength coverage range
 WN_Resolution = float(Values[10])                                               #Resolution of the Wave Number
 LineShapeProfile = Values[11].replace(" ","")                                   #Voigt profile by default
-NumChunks = int(Values[12].replace(" ",""))                                     #Number of chunks for the wavenumber
-MoleculeList = Values[13].split(",")                                             #Get the list of Molecular species
-Cores = int(Values[14])
-Error = Values[15].replace("\t","")
+MoleculeList = Values[12].split(",")                                             #Get the list of Molecular species
+Cores = int(Values[13])
+Error = Values[14].replace("\t","")
 
 SaveFolder = "DataMatrix"+Error.replace("-","Neg").replace(" ","")
-
-
 MoleculeList = [Item.replace(" ", "").replace("\t","") for Item in MoleculeList]
 
 
@@ -46,7 +43,8 @@ expP_Range = np.arange(expP_Start, expP_Stop-expP_Step, -expP_Step)             
 
 WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
 WaveNumberStop= 1./(LowWavelength*1.e-7)               #in per cm
-WaveNumberRange = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
+WaveNumberRange = np.arange(WaveNumberStart, WaveNumberStop, WN_Resolution)
+
 
 
 for Molecule in MoleculeList:
@@ -55,7 +53,8 @@ for Molecule in MoleculeList:
     Database = ReadData(Molecule, Location="data/")
 
     #initiate the saving matrix for each case
-    SigmaMatrix = np.empty((len(TempRange),len(expP_Range),len(WaveNumberRange)))*np.nan
+    SigmaMatrix = np.zeros((len(TempRange),len(expP_Range),len(WaveNumberRange)),dtype=np.float32)
+    print("The shape of the Sigma Matrix is given by:", np.shape(SigmaMatrix))
 
     for TempCount, TempValue in enumerate(TempRange):
             for PCount, expPValue in enumerate(expP_Range):

@@ -110,6 +110,7 @@ def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(3
 
             Tasks.append(CPU_Pool.apply_async(GenerateCrossSection, (Omegas, LineCenterDB_Slice, LineIntensityDB_Slice,
                                               LowerStateEnergyDB_Slice, GammaSelf_Slice, TempRatioPower_Slice, LINE_PROFILE, Params)))
+
         CPU_Pool.close()
         CPU_Pool.join()
 
