@@ -3,6 +3,18 @@ import time
 import matplotlib.pyplot as plt
 from HAPILite import CalcCrossSection, CalcCrossSectionWithError
 from lib.ReadComputeFunc import ReadData
+import matplotlib.backends.backend_pdf import PdfPages
+
+import matplotlib as mpl
+mpl.rc('font',**{'sans-serif':['Helvetica'], 'size':15,'weight':'bold'})
+mpl.rc('axes',**{'labelweight':'bold', 'linewidth':1.5})
+mpl.rc('ytick',**{'major.pad':22, 'color':'k'})
+mpl.rc('xtick',**{'major.pad':10,})
+mpl.rc('mathtext',**{'default':'regular','fontset':'cm','bf':'monospace:bold'})
+mpl.rc('text', **{'usetex':True})
+mpl.rc('text.latex',preamble=r'\usepackage{cmbright},\usepackage{relsize},'+r'\usepackage{upgreek}, \usepackage{amsmath}')
+mpl.rc('contour', **{'negative_linestyle':'solid'})
+
 
 #Molecule = "N2"
 #TempValue = 900.0
@@ -41,12 +53,15 @@ CrossSectionVoigt1SigNeg =  CalcCrossSectionWithError(Database,Temp=TempValue, P
 
 
 plt.figure(figsize=(12,6))
-plt.plot(WaveNumber, CrossSectionVoigt0Sig, "k-", alpha=0.75)
-plt.fill_between(WaveNumber, CrossSectionVoigt1SigPos, CrossSectionVoigt1SigNeg, color="red", alpha=0.90)
+plt.plot(WaveNumber, CrossSectionVoigt0Sig, "k-", alpha=0.75, label = "No Error")
+plt.fill_between(WaveNumber, CrossSectionVoigt1SigPos, CrossSectionVoigt1SigNeg, color="red", alpha=0.90, label="1 Sigma Interval")
 plt.tick_params(which="both", direction="in")
-plt.ylabel("Cross-Section")
-plt.xlabel("Wavenumber (cm$^{-1}$)")
+plt.ylabel("Cross-Section", fontsize=20)
+plt.ylim([0, 6.0])
+plt.xlim([1600, 1810.0])
+plt.xlabel("Wavenumber (cm$^{-1}$)", fontsize=20)
 plt.title("Voigt   %s (Temp: %s Pressure: %s)" %(Molecule, str(int(TempValue)),str(round(P_Value,3))))
+plt.legend()
 plt.tight_layout()
 plt.savefig("ErrorFigure.png")
 plt.show()
