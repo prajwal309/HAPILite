@@ -3,8 +3,6 @@ import numpy as np
 from CrossSectionFunctions import GetWaveNumbers, SymplecticInterpolation
 import matplotlib.pyplot as plt
 import os
-#from numba import jit, njit
-
 
 #parse the parameters.ini which contains the information
 Data = [f.split(":") for f in open("CrossSectionParams/Parameters.ini",'r+')][1:]
@@ -16,41 +14,37 @@ TempStart = float(Values[0])    #Step size of the temperature
 TempStop = float(Values[1])     #Step size of the temperature
 TempStep = float(Values[2])     #Step size of the temperature
 
-expP_Start = float(Values[3])
-expP_Stop = float(Values[4])
-expP_Step = float(Values[5])                                                       #Step size of the pressure
+expP_Start = float(Values[3])   #The largest log10(pressure) in atm
+expP_Stop = float(Values[4])    #The smallest log10(pressure) in atm
+expP_Step = float(Values[5])    #Step size of the pressure
 
 
 Broadener = Values[6].replace(" ","")                                           #Broadening either self or air at this point
 OmegaWidth = float(Values[7])                                                   #Consider the omegawidth -- how far the lines have to be considered
 LowWavelength = float(Values[8])                                                #Shortest Wavelength coverage range
 HighWavelength = float(Values[9])                                               #Longest Wavelength coverage range
-WN_Resolution = float(Values[10])                                        #Resolution of the Wave Number
-LineShapeProfile = Values[11].replace(" ","")                                    #Voigt profile by default
-NumChunks = int(Values[12].replace(" ",""))                                      #Number of chunks for the wavenumber
-MoleculeList = Values[13].split(",")                                             #Get the list of Molecular species
-Cores = int(Values[14])                                                          #Number of cores to be used
+WN_Resolution = float(Values[10])                                               #Resolution of the Wave Number
+LineShapeProfile = Values[11].replace(" ","")                                   #Voigt profile by default
+MoleculeList = Values[12].split(",")                                             #Get the list of Molecular species
+Cores = int(Values[13])
+Error = Values[14].replace("\t","")
 
+SaveFolder = "DataMatrix"+Error.replace("-","Neg").replace(" ","")
 MoleculeList = [Item.replace(" ", "").replace("\t","") for Item in MoleculeList]
+
+print("The list of the molecules is given by::", MoleculeList)
+input("Wait here...")
 
 
 TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)                    #Temperature in K
 expP_Range = np.arange(expP_Start, expP_Stop-expP_Step, -expP_Step)             #Pressure in log(P) atm
 
-WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
-WaveNumberStop= 1./(LowWavelength*1.e-7)            #in per cm
-WaveNumberRange = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
 
 
 print("The range of temperature is given by::", TempRange)
 print("The range of pressure is given by::", expP_Range)
 
 input("Wait here....")
-
-
-WaveNumberStart = 1./(HighWavelength*1.e-7)         #in per cm
-WaveNumberStop= 1./(LowWavelength*1.e-7)            #in per cm
-WaveNumberRange = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
 
 
 
@@ -72,20 +66,10 @@ np.savetxt(Folder2Save+"/exp_Pressure.txt", expP_Range)
 np.savetxt(Folder2Save+"/WaveLength.txt", Wavelength_LR)
 
 
-#converting to nm
-Wavelength_LR*=1e7
-
-plt.figure()
-plt.plot(Wavelength_LR,Wavelength_LR, "ko")
-plt.show()
-
-
 LengthWaveNumber = len(np.arange(WaveNumberStart, WaveNumberStop+WN_Resolution, WN_Resolution))
 WaveNumberRanges = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
 
 
-HR_WaveNumber = WaveNumberRanges
-LR_WaveNumber = np.linspace(min(HR_WaveNumber), max(HR_WaveNumber),Resolution)
 
 
 for Molecule in MoleculeList:
@@ -93,6 +77,7 @@ for Molecule in MoleculeList:
     #Read the molecule name
     Location = "DataMatrix/"+Molecule+".npy"
     print("The Location is given by::", Location)
+    input("Crash you data here")
     SigmaMatrix = np.load(Location)
     print("The shape of the cross-section is given by::", np.shape(SigmaMatrix))
     input("Wait here....")

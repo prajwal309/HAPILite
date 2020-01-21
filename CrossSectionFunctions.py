@@ -1,7 +1,7 @@
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline, interp1d
+from scipy.interpolate import interp1d
 #from numba import jit, njit
 #@jit(parallel=True,fastmath=True)
 
