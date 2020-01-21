@@ -29,10 +29,9 @@ MoleculeList = Values[12].split(",")                                            
 Cores = int(Values[13])
 Error = Values[14].replace("\t","")
 
-SaveFolder = "DataMatrix"+Error.replace("-","Neg").replace(" ","")
-MoleculeList = [Item.replace(" ", "").replace("\t","") for Item in MoleculeList]
+MoleculeList = np.array([Item.replace(" ", "").replace("\t","") for Item in MoleculeList])
 
-print("The list of the molecules is given by::", MoleculeList)
+print(MoleculeList)
 input("Wait here...")
 
 
@@ -40,12 +39,13 @@ TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)                    
 expP_Range = np.arange(expP_Start, expP_Stop-expP_Step, -expP_Step)             #Pressure in log(P) atm
 
 
-
-print("The range of temperature is given by::", TempRange)
-print("The range of pressure is given by::", expP_Range)
-
-input("Wait here....")
-
+#Define the wavenumber range values...
+WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
+WaveNumberStop= 1./(LowWavelength*1.e-7)               #in per cm
+WaveNumberRange = np.arange(WaveNumberStart, WaveNumberStop, WN_Resolution)
+#Plotting in the ascending order
+WaveLengthRange = 1./WaveNumberRange
+WaveLengthRange = WaveLengthRange[::-1]
 
 
 
@@ -61,60 +61,38 @@ Folder2Save = "R"+str(Resolution)
 if not(os.path.exists(Folder2Save)):
     os.system("mkdir %s" %(Folder2Save))
 
-np.savetxt(Folder2Save+"/Temperature.txt", TempRange)
-np.savetxt(Folder2Save+"/exp_Pressure.txt", expP_Range)
-np.savetxt(Folder2Save+"/WaveLength.txt", Wavelength_LR)
+np.savetxt(Folder2Save+"/Temperature.txt", TempRange, delimiter=",")
+np.savetxt(Folder2Save+"/exp_Pressure.txt", expP_Range, delimiter=",")
+np.savetxt(Folder2Save+"/WaveLength.txt", Wavelength_LR, delimiter=",")
+np.savetxt(Folder2Save+"/Molecules.txt", MoleculeList, delimiter=",", fmt='%s')
 
+BaseLocation = "DataMatrix0Sig_100cm/"
+MoleculesFiles = glob.glob(BaseLocation+"*.npy")
+NumMolecules = len(MoleculesFiles)
+NumTempValues = len(TempRange)
+NumPValues = len(expP_Range)
+NumWL_Values = len(Wavelength_LR)
 
-LengthWaveNumber = len(np.arange(WaveNumberStart, WaveNumberStop+WN_Resolution, WN_Resolution))
-WaveNumberRanges = np.linspace(WaveNumberStart, WaveNumberStop, NumChunks+1)
+#Initiate a database matrix
+DatabaseMatrix = np.ones((NumMolecules, NumTempValues, NumPValues, NumWL_Values), dtype=np.float32)
 
-
-
-
-for Molecule in MoleculeList:
-
+for MoleculeCount, Molecule in enumerate(MoleculeList):
     #Read the molecule name
-    Location = "DataMatrix/"+Molecule+".npy"
-    print("The Location is given by::", Location)
-    input("Crash you data here")
-    SigmaMatrix = np.load(Location)
-    print("The shape of the cross-section is given by::", np.shape(SigmaMatrix))
-    input("Wait here....")
-    #which molecule to consider
+    MoleculeLocation = BaseLocation+Molecule+".npy"
+    print("The molecule is given by::", Molecule, ".   Now loading the data....")
 
-
-    #Initiate a molecule matrix
-    MoleculeMatrix = np.zeros((len(TempRange),len(expP_Range),Resolution))
-
-    for TempCounter in range(len(TempCount)):
+    SigmaMatrix = np.load(MoleculeLocation,mmap_mode='r')
+    print("Loaded the data")
+    for TempCounter in range(len(TempRange)):
         for PCounter in range((len(expP_Range))):
+            #Get the temperature and the pressure index...
+            Sigma_HR = SigmaMatrix[TempCounter, PCounter, :][::-1]
+
+            InterpolatedSigma  = SymplecticInterpolation(WaveLengthRange, Sigma_HR,Wavelength_LR)
+            DatabaseMatrix[MoleculeCount, TempCounter, PCounter, :] = InterpolatedSigma
+
+            plt.figure()
+            plt.plot(WaveNumberRange, Sigma_HR, "ko")
+            plt.plot(WaveNumber_LR, InterpolatedSigma, "r-")
+            plt.show()
             print(TempCounter, PCounter)
-    #Convert WaveNumbers to Wavelengths
-    Selected_HR_Wavelength = 1./Selected_WN*1e7
-    Selected_LR_Wavelength = 1./SelectedWaveNumber*1e7
-
-    MinWavelength  = min(Selected_HR_Wavelength)
-    MaxWavelength = max(Selected_HR_Wavelength)
-
-    #Reverse the sigma when assigning the value
-    AssignIndexStart = np.argmin(np.abs(MinWavelength-Wavelength_LR))
-    AssignIndexStop = AssignIndexStart + len(InterpolatedValues)
-
-
-    MoleculeMatrix[OuterCounter, InnerCounter, AssignIndexStart:AssignIndexStop] = InterpolatedValues[::-1]
-
-    if 1==2:        #Printing in flagging
-        plt.figure(figsize=(18,8),dpi=300)
-        plt.plot(Selected_HR_Wavelength, GenCrossSection, "k.-", label="")
-        plt.plot(Selected_LR_Wavelength, InterpolatedValues, "r+:", label="Interpolation")
-        SaveName = "Figures/Case_"+str(OuterCounter*1000+InnerCounter)+".png"
-        TitleText = "Temp_"+str(int(TemperatureValue)) + "_Pressure_"+str((PressureValue))
-        print("The Text Value is given by::", TitleText)
-        plt.xlabel("Wavelength (nm)")
-        plt.ylabel("Cross-Section")
-        plt.title(TitleText)
-        plt.tight_layout()
-        plt.savefig("Figures/"+TitleText+".png")
-        plt.show()
-        plt.close('all')
