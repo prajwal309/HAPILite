@@ -6,9 +6,9 @@ from lib.ReadComputeFunc import ReadData
 import matplotlib.pyplot as plt
 
 
-Molecule = "H2"
-TempValue = 900.0
-P_Value = 10.0
+Molecule = "N2"
+TempValue = 800.0
+P_Value = 1.0
 
 #TempValue = 1000.0
 #P_Value = 10.0
@@ -21,9 +21,9 @@ Env= {'T': TempValue, 'p': P_Value}
 StartTime = time.time()
 hapi.db_begin('TestData')
 nu_hapi_Doppler, abs_hapi_Doppler = hapi.absorptionCoefficient_Doppler(SourceTables=Molecule,OmegaGrid=WaveNumber,
-HITRAN_units=False, Environment=Env,  GammaL='gamma_self', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
+                    HITRAN_units=True, Environment=Env,  GammaL='gamma_self', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
 nu_hapi_Voigt, abs_hapi_Voigt = hapi.absorptionCoefficient_Voigt(SourceTables=Molecule,OmegaGrid=WaveNumber,
-                    HITRAN_units=False, Environment=Env,  GammaL='gamma_self', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
+                    HITRAN_units=True, Environment=Env,  GammaL='gamma_self', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
 TimeTakenHapi = time.time() - StartTime
 print("The time taken for HAPI is::",TimeTakenHapi)
 
@@ -71,7 +71,7 @@ ax1.set_xlabel("WaveNumber (per cm)")
 ax1.set_ylabel("Residual")
 plt.suptitle("Voigt ---   %s (Temp: %s Pressure: %s)" %(Molecule, str(int(TempValue)),str(round(P_Value,3))))
 plt.tight_layout()
-#plt.show()
 plt.savefig("BenchmarkTest_%s_Voigt.png" %(Molecule))
+plt.show()
 
 plt.close()

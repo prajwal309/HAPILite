@@ -1,8 +1,11 @@
 import glob
 import numpy as np
-from CrossSectionFunctions import GetWaveNumbers, SymplecticInterpolation
+from lib.CrossSectionFunctions import GetWaveNumbers, BinModel
 import matplotlib.pyplot as plt
 import os
+import itertools
+import time
+import multiprocessing as mp
 
 #parse the parameters.ini which contains the information
 Data = [f.split(":") for f in open("CrossSectionParams/Parameters.ini",'r+')][1:]
@@ -29,10 +32,6 @@ MoleculeList = Values[12].split(",")                                            
 Cores = int(Values[13])
 Error = Values[14].replace("\t","")
 
-MoleculeList = np.array([Item.replace(" ", "").replace("\t","") for Item in MoleculeList])
-
-print(MoleculeList)
-input("Wait here...")
 
 
 TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)                    #Temperature in K
@@ -50,13 +49,13 @@ WaveLengthRange = WaveLengthRange[::-1]
 
 
 #Now get the assign the resolution values
-Resolution = 25000
+Resolution = 10000
 
 #Low resolution wavelength
 Wavelength_LR, WaveNumber_LR = GetWaveNumbers(LowWavelength, HighWavelength, Resolution)
 
-print("The range of the wavelength is given by::", Wavelength_LR)
-Folder2Save = "R"+str(Resolution)
+
+Folder2Save = "R1SIG"+str(Resolution)
 
 if not(os.path.exists(Folder2Save)):
     os.system("mkdir %s" %(Folder2Save))
@@ -66,7 +65,7 @@ np.savetxt(Folder2Save+"/exp_Pressure.txt", expP_Range, delimiter=",")
 np.savetxt(Folder2Save+"/WaveLength.txt", Wavelength_LR, delimiter=",")
 np.savetxt(Folder2Save+"/Molecules.txt", MoleculeList, delimiter=",", fmt='%s')
 
-BaseLocation = "DataMatrix0Sig_100cm/"
+BaseLocation = "DataMatrix1SIG/"
 MoleculesFiles = glob.glob(BaseLocation+"*.npy")
 NumMolecules = len(MoleculesFiles)
 NumTempValues = len(TempRange)
@@ -74,25 +73,48 @@ NumPValues = len(expP_Range)
 NumWL_Values = len(Wavelength_LR)
 
 #Initiate a database matrix
-DatabaseMatrix = np.ones((NumMolecules, NumTempValues, NumPValues, NumWL_Values), dtype=np.float32)
+DatabaseMatrix = np.ones((NumTempValues, NumPValues, NumMolecules, NumWL_Values), dtype=np.float32)
 
+StartTime = time.time()
 for MoleculeCount, Molecule in enumerate(MoleculeList):
     #Read the molecule name
     MoleculeLocation = BaseLocation+Molecule+".npy"
-    print("The molecule is given by::", Molecule, ".   Now loading the data....")
+    TP_Counter = list(itertools.product(range(len(TempRange)),range(len(expP_Range))))
 
+    #Using multiprocessing
     SigmaMatrix = np.load(MoleculeLocation,mmap_mode='r')
-    print("Loaded the data")
-    for TempCounter in range(len(TempRange)):
-        for PCounter in range((len(expP_Range))):
-            #Get the temperature and the pressure index...
-            Sigma_HR = SigmaMatrix[TempCounter, PCounter, :][::-1]
 
-            InterpolatedSigma  = SymplecticInterpolation(WaveLengthRange, Sigma_HR,Wavelength_LR)
-            DatabaseMatrix[MoleculeCount, TempCounter, PCounter, :] = InterpolatedSigma
+    print("The molecule is given by::", Molecule, ".   Now loading the data....")
+    print("The location of the molecule is given by::", MoleculeLocation)
 
-            plt.figure()
-            plt.plot(WaveNumberRange, Sigma_HR, "ko")
-            plt.plot(WaveNumber_LR, InterpolatedSigma, "r-")
-            plt.show()
-            print(TempCounter, PCounter)
+    while(len(TP_Counter)>0):
+        NUMCORES = min([mp.cpu_count(), len(TP_Counter)])
+        CPU_Pool = mp.Pool(NUMCORES)
+        Tasks = []
+        TempCounterValues = []
+        PCounterValues = []
+        for i in range(NUMCORES):
+
+            Item = TP_Counter[0]
+            TempCounter, PCounter = Item
+            TempCounterValues.append(TempCounter)
+            PCounterValues.append(PCounter)
+            TP_Counter.pop(0)
+
+            #High resolution cross-section data
+            Sigma_HR = SigmaMatrix[TempCounter, PCounter, :]
+            Tasks.append(CPU_Pool.apply_async(BinModel, (WaveLengthRange, Sigma_HR, Wavelength_LR)))
+
+        CPU_Pool.close()
+        CPU_Pool.join()
+
+        for Count, task in enumerate(Tasks):
+            Result=task.get()
+            #Assign the value to the datamatrix
+            DatabaseMatrix[TempCounterValues[Count], PCounterValues[Count], MoleculeCount,:] = Result
+
+
+
+#Now save the datamatrix
+print("Time taken::", time.time() - StartTime)
+np.save(Folder2Save+"/DataBase_%d.npy" %Resolution, DatabaseMatrix)

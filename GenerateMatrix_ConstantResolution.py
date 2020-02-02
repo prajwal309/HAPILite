@@ -7,44 +7,41 @@ from time import time
 import os
 from HAPILite import CalcCrossSection, CalcCrossSectionWithError
 from lib.ReadComputeFunc import ReadData
+from lib.CrossSectionFunctions import GetWaveNumbers
 
 
 #parse the parameters.ini which contains the information
 Data = [f.split(":") for f in open("CrossSectionParams/Parameters.ini",'r+')][1:]
 Values = [Item[1].split("#")[0] for Item in Data]
 
+#Temperature and pressure is defined by the user.
+TempRange = np.arange(100,901,100)
+expP_Range = np.array([ 2.,1.,0.6,0.2,-0.1,-0.4,-0.7,-1.,-1.3, \
+                         -1.6,-2.,-3.,-4.,-5.,-6.,-7.,-8.])
 
-#Load the parameters for creating
-TempStart = float(Values[0])    #Step size of the temperature
-TempStop = float(Values[1])     #Step size of the temperature
-TempStep = float(Values[2])     #Step size of the temperature
-
-expP_Start = float(Values[3])   #The largest log10(pressure) in atm
-expP_Stop = float(Values[4])    #The smallest log10(pressure) in atm
-expP_Step = float(Values[5])    #Step size of the pressure
-
-
-Broadener = Values[6].replace(" ","")                                           #Broadening either self or air at this point
-OmegaWidth = float(Values[7])                                                   #Consider the omegawidth -- how far the lines have to be considered
+OmegaWidth = 100.0                                                              #Consider the omegawidth -- how far the lines have to be considered
 LowWavelength = float(Values[8])                                                #Shortest Wavelength coverage range
 HighWavelength = float(Values[9])                                               #Longest Wavelength coverage range
-WN_Resolution = float(Values[10])                                               #Resolution of the Wave Number
 LineShapeProfile = Values[11].replace(" ","")                                   #Voigt profile by default
 MoleculeList = Values[12].split(",")                                            #Get the list of Molecular species
 Cores = int(Values[13])
-Error = Values[14].replace("\t","")
+Error = "1SIG"#Values[14].replace("\t","")
 
 SaveFolder = "DataMatrix"+Error.replace("-","Neg").replace(" ","")
+
+if not(os.path.exists(SaveFolder)):
+    os.system("mkdir %s" %SaveFolder)
+
+
 MoleculeList = [Item.replace(" ", "").replace("\t","") for Item in MoleculeList]
-
-TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)                    #Temperature in K
-expP_Range = np.arange(expP_Start, expP_Stop-expP_Step, -expP_Step)             #Pressure in log(P) atm
-
-WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
-WaveNumberStop= 1./(LowWavelength*1.e-7)               #in per cm
-WaveNumberRange = np.arange(WaveNumberStart, WaveNumberStop, WN_Resolution)
+MoleculeList = np.array([Item.replace(" ", "").replace("\t","") for Item in MoleculeList])
 
 
+#Now get the assign the resolution values
+Resolution = 100000
+
+#Low resolution wavelength
+WavelengthRange, WaveNumberRange = GetWaveNumbers(LowWavelength, HighWavelength, Resolution)
 
 for Molecule in MoleculeList:
     print("\n\n Starting Molecule::", Molecule)
@@ -65,11 +62,11 @@ for Molecule in MoleculeList:
 
                 if "0SIG" in Error.upper():
                     SigmaMatrix[TempCount, PCount, :] = CalcCrossSection(Database, Temp=TempValue, P = P_Value, WN_Grid=WaveNumberRange,   \
-                                                        Profile=LineShapeProfile, OmegaWing=100.0, OmegaWingHW=0.0, NCORES=Cores)
+                                                        Profile=LineShapeProfile, OmegaWing=100.0, OmegaWingHW=0.0, NCORES=Cores)[::-1]
 
                 elif "1SIG" in Error.upper() or "2SIG" in Error.upper():
                     SigmaMatrix[TempCount, PCount, :] = CalcCrossSectionWithError(Database, Temp=TempValue, P = P_Value, WN_Grid=WaveNumberRange,   \
-                                                        Profile=LineShapeProfile, OmegaWing=100.0, OmegaWingHW=0.0, NCORES=Cores, Err=Error)
+                                                        Profile=LineShapeProfile, OmegaWing=100.0, OmegaWingHW=0.0, NCORES=Cores, Err=Error)[::-1]
 
                 else:
                     raise Exception("Error in GenerateMatrix. The error has to be 0SIG, 1SIG/-1SIG or 2SIG/-2SIG ")

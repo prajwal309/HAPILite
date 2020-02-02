@@ -42,8 +42,8 @@ def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(3
     #check for nans in the values
 
     NLINES = len(LineCenterDB)
-    #Units --- Not HITRAN Units
-    factor = (P/9.869233e-7)/(cBolts*Temp) #
+    #Units --- HITRAN units should be true
+    factor = 1.0  #(P/9.869233e-7)/(cBolts*Temp) #
 
     #Calculate the partition Function
     SigmaT = BD_TIPS_2017_PYTHON(MoleculeNumberDB,IsoNumberDB,Temp)
@@ -172,7 +172,7 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296, P=1, WN_Grid=np
 
         NLINES = len(LineCenterDB)
         #Units --- Not HITRAN Units
-        factor = (P/9.869233e-7)/(cBolts*Temp) #
+        factor = 1.0#(P/9.869233e-7)/(cBolts*Temp) #
 
         #Calculate the partition Function
         SigmaT = BD_TIPS_2017_PYTHON(MoleculeNumberDB,IsoNumberDB,Temp)

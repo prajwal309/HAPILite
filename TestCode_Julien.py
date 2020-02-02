@@ -37,6 +37,7 @@ Error = Values[14].replace("\t","")
 SaveFolder = "DataMatrix"+Error.replace("-","Neg").replace(" ","")
 MoleculeList = [Item.replace(" ", "").replace("\t","") for Item in MoleculeList]
 
+
 TempRange = np.arange(TempStart,TempStop+TempStep, TempStep)                    #Temperature in K
 expP_Range = np.arange(expP_Start, expP_Stop-expP_Step, -expP_Step)             #Pressure in log(P) atm
 
@@ -44,6 +45,18 @@ WaveNumberStart = 1./(HighWavelength*1.e-7)            #in per cm
 WaveNumberStop= 1./(LowWavelength*1.e-7)               #in per cm
 WaveNumberRange = np.arange(WaveNumberStart, WaveNumberStop, WN_Resolution)
 
+WaveLengthRange = 1./WaveNumberRange
+
+print("Length::", len(WaveLengthRange))
+
+Diff = np.diff(WaveLengthRange)
+Resolution = WaveLengthRange[1:]/Diff
+
+#plt.figure()
+#plt.plot(WaveLengthRange[1:], Resolution, "ko")
+#plt.show()
+
+input("Crash here")
 
 
 for Molecule in MoleculeList:
