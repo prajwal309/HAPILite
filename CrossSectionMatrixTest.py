@@ -1,37 +1,25 @@
+#/bin
 import numpy as np
 import time
 import matplotlib.pyplot as plt
 from HAPILite import CalcCrossSection, CalcCrossSectionWithError
 from lib.ReadComputeFunc import ReadData
+from lib.PartitionFunction import BD_TIPS_2017_PYTHON
+
+
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import FormatStrFormatter
 
-import matplotlib as mpl
-mpl.rc('font',**{'sans-serif':['Helvetica'], 'size':15,'weight':'bold'})
-mpl.rc('axes',**{'labelweight':'bold', 'linewidth':1.5})
-mpl.rc('ytick',**{'major.pad':22, 'color':'k'})
-mpl.rc('xtick',**{'major.pad':10,})
-mpl.rc('mathtext',**{'default':'regular','fontset':'cm','bf':'monospace:bold'})
-mpl.rc('text', **{'usetex':True})
-mpl.rc('text.latex',preamble=r'\usepackage{cmbright},\usepackage{relsize},'+r'\usepackage{upgreek}, \usepackage{amsmath}')
-mpl.rc('contour', **{'negative_linestyle':'solid'})
-
-
-
-
 Molecule = "H2O"
-TempValue = 600.0
+TempValue = 300.0
+Tref=296.0
 P_Value = 1.0
 
 OmegaWingValue = 100.0
 OmegaRangeValue = [1./30000.*1e7, 1./300.*1e7]
-print("The omega range values is given by::", OmegaRangeValue)
 
+WaveNumber = np.arange(OmegaRangeValue[0], OmegaRangeValue[1]+0.01, 0.01)
 
-WaveNumber = np.arange(OmegaRangeValue[0], OmegaRangeValue[1]+0.01, 0.005)
-
-
-StartTime = time.time()
 
 Database = ReadData(Molecule, Location="data/")
 MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, \
@@ -41,29 +29,44 @@ SelectIndex = np.logical_and(LineCenterDB>OmegaRangeValue[0], LineCenterDB<Omega
 
 LineCenterDB = LineCenterDB[SelectIndex]
 LineIntensityDB = LineIntensityDB[SelectIndex]
+LowerStateEnergyDB = LowerStateEnergyDB[SelectIndex]
 
-ch = np.exp(-const_R*LowerStateEnergy/Temp)*(1-np.exp(-const_R*LineCenterDB/Temp))
-zn = np.exp(-const_R*LowerStateEnergy/Tref)*(1-np.exp(-const_R*LineCenterDB/Tref))
-LineIntensity = LineIntensityDB[i]*SigmaTref/SigmaT*ch/zn
-
-TotalIntensity = np.sum(LineIntensityDB)
+const_R = 1.4388028496642257 #Radiation Constant
 
 
-CrossSection =  CalcCrossSectionWithIntensity(Database,Temp=TempValue, P = 1.0,\
-                         WN_Grid=WaveNumber, Profile="Doppler", OmegaWing=OmegaWingValue,\
-                         OmegaWingHW=0.0, NCORES=-1, Err="0SIG")
+TempRange = np.arange(100,901,300)
+expPRange = [3.0]#np.arange(3.0,3.1,0.5)
+
+ErrorMatrix = np.zeros((len(TempRange), len(expPRange)))
+
+for TCounter, TempValue in enumerate(TempRange):
+    for PCounter, expP in enumerate(expPRange):
+        PValue = 10**expP
+
+        ch = np.exp(-const_R*LowerStateEnergyDB/TempValue)*(1-np.exp(-const_R*LineCenterDB/TempValue))
+        zn = np.exp(-const_R*LowerStateEnergyDB/Tref)*(1-np.exp(-const_R*LineCenterDB/Tref))
+        SigmaT = BD_TIPS_2017_PYTHON(MoleculeNumberDB,IsoNumberDB,TempValue)
+        SigmaTref = BD_TIPS_2017_PYTHON(MoleculeNumberDB,IsoNumberDB,Tref)
+
+        LineIntensityScaled = LineIntensityDB*SigmaTref/SigmaT*ch/zn
+
+        TotalIntensity = np.sum(LineIntensityScaled)
 
 
-Area = np.trapz(CrossSection, WaveNumber)
 
-#Generate the area
-
-print("The total value of intensity is::", np.sum(TotalIntensity))
-print("The value of the area is given by::", Area)
-input("Wait here...")
+        CrossSection =  CalcCrossSection(Database,Temp=TempValue, P = PValue,\
+                         WN_Grid=WaveNumber, Profile="Voigt", OmegaWing=OmegaWingValue,\
+                         OmegaWingHW=0.0, NCORES=-1)
 
 
-plt.figure()
-plt.plot(WaveNumber, CrossSection, "k.")
-plt.savefig("DeleteMe.png")
-plt.close('all')
+        #Generate the area
+        Area = np.trapz(CrossSection, WaveNumber)
+
+        #Relative error
+        RelativeError =  (TotalIntensity - Area)/TotalIntensity*100.0
+
+        print(TempValue, PValue, "::", RelativeError)
+
+        ErrorMatrix[TCounter, PCounter] = RelativeError
+
+#np.savetxt("ErrorValue.csv", ErrorMatrix, delimiter=",")
