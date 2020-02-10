@@ -37,7 +37,7 @@ def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, WN_Grid=np.arange(3
     """
 
 
-    MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray = Database
+    MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, GammaAir, TempRatioPower, ErrorArray = Database
 
     #check for nans in the values
 

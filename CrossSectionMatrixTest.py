@@ -10,7 +10,7 @@ from lib.PartitionFunction import BD_TIPS_2017_PYTHON
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import FormatStrFormatter
 
-Molecule = "H2O"
+Molecule = "CO"
 TempValue = 300.0
 Tref=296.0
 P_Value = 1.0
@@ -18,7 +18,7 @@ P_Value = 1.0
 OmegaWingValue = 100.0
 OmegaRangeValue = [1./30000.*1e7, 1./300.*1e7]
 
-WaveNumber = np.arange(OmegaRangeValue[0], OmegaRangeValue[1]+0.01, 0.01)
+WaveNumber = np.arange(OmegaRangeValue[0], OmegaRangeValue[1]+0.01, 0.001)
 
 
 Database = ReadData(Molecule, Location="data/")
@@ -34,8 +34,8 @@ LowerStateEnergyDB = LowerStateEnergyDB[SelectIndex]
 const_R = 1.4388028496642257 #Radiation Constant
 
 
-TempRange = np.arange(100,901,300)
-expPRange = [3.0]#np.arange(3.0,3.1,0.5)
+TempRange = np.arange(100,901,100)
+expPRange = np.arange(-5.,3.1,0.5)
 
 ErrorMatrix = np.zeros((len(TempRange), len(expPRange)))
 
@@ -56,7 +56,7 @@ for TCounter, TempValue in enumerate(TempRange):
 
         CrossSection =  CalcCrossSection(Database,Temp=TempValue, P = PValue,\
                          WN_Grid=WaveNumber, Profile="Voigt", OmegaWing=OmegaWingValue,\
-                         OmegaWingHW=0.0, NCORES=-1)
+                         OmegaWingHW=100.0, NCORES=-1)
 
 
         #Generate the area
@@ -69,4 +69,4 @@ for TCounter, TempValue in enumerate(TempRange):
 
         ErrorMatrix[TCounter, PCounter] = RelativeError
 
-#np.savetxt("ErrorValue.csv", ErrorMatrix, delimiter=",")
+np.savetxt("ErrorValue_HW_HS.csv", ErrorMatrix, delimiter=",")
