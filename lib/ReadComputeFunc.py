@@ -35,6 +35,7 @@ def ReadData(MoleculeName, Location="data/"):
     LineIntensityDB = np.array([float(Item[16:26]) for Item in Data])
     LowerStateEnergyDB = np.array([float(Item[46:56].replace("-","")) for Item in Data])
     GammaSelf = np.array([float(Item[40:46]) for Item in Data])
+    GammaAir = np.array([float(Item[35:40]) for Item in Data])
 
     #Temperature Dependence of Gamma0
     TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
@@ -42,7 +43,7 @@ def ReadData(MoleculeName, Location="data/"):
     #The value of the error values. Keep them as string to preserve 0 at the beginning.
     ErrorArray = np.array([Item[127:133] for Item in Data])
 
-    return MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray
+    return MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, GammaAir, TempRatioPower, ErrorArray
 
 
 
@@ -73,13 +74,21 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
 
         #The Doppler Broadening coefficients
         GammaD = np.sqrt(2*cBolts*Temp*np.log(2)/m/cc**2)*LineCenterDB[i]
+        
+        print("The Doppler broadening is given by:",GammaD)
+        print(LineCenterDB[i])
+        print("The temperature is::", Temp)
+        print(m)
+        print(LineCenterDB[i])
+        input("Crash here...")
 
         #Scale the line intensity with the temperature
         ch = np.exp(-const_R*LowerStateEnergy/Temp)*(1-np.exp(-const_R*LineCenter/Temp))
         zn = np.exp(-const_R*LowerStateEnergy/Tref)*(1-np.exp(-const_R*LineCenter/Tref))
         LineIntensity = LineIntensityDB[i]*SigmaTref/SigmaT*ch/zn
 
-        OmegaWingF = max(OmegaWing,OmegaWingHW*Gamma0,OmegaWingHW*GammaD)
+        OmegaV = 0.5346*Gamma0+np.sqrt(0.2166*Gamma0*Gamma0+GammaD*GammaD)
+        OmegaWingF = max(OmegaWing,OmegaWingHW*OmegaV)
 
         #Find the range to calculate the value:::
         BoundIndexLower = bisect(Omegas,LineCenter-OmegaWingF)
