@@ -6,7 +6,7 @@ from lib.ReadComputeFunc import ReadData
 import matplotlib.pyplot as plt
 
 
-Molecule = "N2"
+Molecule = "CO"
 TempValue = 100.0
 P_Value = 0.00001
 
@@ -21,9 +21,9 @@ Env= {'T': TempValue, 'p': P_Value}
 #StartTime = time.time()
 #hapi.db_begin('TestData')
 #nu_hapi_Doppler, abs_hapi_Doppler = hapi.absorptionCoefficient_Doppler(SourceTables=Molecule,OmegaGrid=WaveNumber,
-#                    HITRAN_units=True, Environment=Env,  GammaL='gamma_self', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
+#                    HITRAN_units=True, Environment=Env,  GammaL='gamma_air', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
 #nu_hapi_Voigt, abs_hapi_Voigt = hapi.absorptionCoefficient_Voigt(SourceTables=Molecule,OmegaGrid=WaveNumber,
-#                    HITRAN_units=True, Environment=Env,  GammaL='gamma_self', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
+#                    HITRAN_units=True, Environment=Env,  GammaL='gamma_air', OmegaWing=OmegaWingValue, OmegaWingHW=0.0, LineShift=False)#, OmegaStep=0.01)
 #TimeTakenHapi = time.time() - StartTime
 #print("The time taken for HAPI is::",TimeTakenHapi)
 
@@ -31,10 +31,7 @@ Env= {'T': TempValue, 'p': P_Value}
 
 print("\n"*10)
 print("*"*25)
-StartTime = time.time()
-print("Started")
 print("The name of the molecule is::", Molecule)
-input("Wait here...")
 Database = ReadData(Molecule, Location="data/")
 print("Starting the calculation of the cross-section")
 #CrossSectionDoppler =  CalcCrossSection(Database,Temp=TempValue,P = P_Value, WN_Grid=WaveNumber, Profile="Doppler", OmegaWing=OmegaWingValue, OmegaWingHW=0.0, NCORES=1)

@@ -39,7 +39,7 @@ def PROFILE_LORENTZ(sg0,GamD,Gam0,sg):
     #   Gam0: Speed-averaged line-width in cm-1 (Input).
     #   sg: Current WaveNumber of the Computation in cm-1 (Input).
     """
-    return Gam0/(pi*(Gam0**2+(sg-sg0)**2))
+    return Gam0/(np.pi*(Gam0**2+(sg-sg0)**2))
 
 
 def PROFILE_DOPPLER(sg0,GamD,Gam0,sg):

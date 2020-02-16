@@ -36,7 +36,10 @@ def ReadData(MoleculeName, Location="data/"):
     LowerStateEnergyDB = np.array([float(Item[46:56].replace("-","")) for Item in Data])
     GammaSelf = np.array([float(Item[40:46]) for Item in Data])
     GammaAir = np.array([float(Item[35:40]) for Item in Data])
+    DeltaAir = np.array([float(Item[59:68]) for Item in Data])
 
+    print("The first element of delta air is given by::", DeltaAir[0])
+    input("Wait here")
     #Temperature Dependence of Gamma0
     TempRatioPower = np.array([float(Item[55:59]) for Item in Data])
 
@@ -74,7 +77,7 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
 
         #The Doppler Broadening coefficients
         GammaD = np.sqrt(2*cBolts*Temp*np.log(2)/m/cc**2)*LineCenterDB[i]
-        
+
         print("The Doppler broadening is given by:",GammaD)
         print(LineCenterDB[i])
         print("The temperature is::", Temp)
