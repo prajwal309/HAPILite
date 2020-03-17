@@ -19,7 +19,7 @@ def MapError(ErrorArray):
 
     #Uncertainty of the line position
     #Uncertainty of the line Intensity
-    #Uncertainty of the airwidth half width
+    #Uncertainty of the air-broadened half width
     #Uncertainty of the self-broadened half width
     #Uncertainty of the temperature dependence of air-broadened half width
     #Uncertainty of the line shifts

@@ -17,9 +17,6 @@ mpl.rc('text.latex',preamble=r'\usepackage{cmbright},\usepackage{relsize},'+r'\u
 mpl.rc('contour', **{'negative_linestyle':'solid'})
 
 
-
-
-
 Molecule = "H2O"
 TempValue = 600.0
 P_Value = 1.0
