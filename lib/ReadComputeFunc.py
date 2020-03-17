@@ -67,7 +67,7 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
     i = 0
     Xsect = np.zeros(len(Omegas))
     NLINES = len(LineCenterDB)
-    for i in prange(NLINES):
+    for i in range(NLINES):
         LineCenter = LineCenterDB[i]
         LowerStateEnergy = LowerStateEnergyDB[i]
 
