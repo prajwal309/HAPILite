@@ -2,7 +2,7 @@ import glob
 import numpy as np
 from .Constants import *
 from bisect import bisect
-from numba import njit, prange
+
 
 def ReadData(MoleculeName, Location="data/"):
     """

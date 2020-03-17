@@ -27,17 +27,17 @@ PressureGrid = np.array([-5.00, -4.20, -3.80,  -3.50, -3.25, -3.05, -2.95, -2.85
                           -0.30, -0.20, -0.10, 0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00,  1.10, 1.20, \
                           1.30, 1.40, 1.50, 1.60, 1.70,  1.80, 1.90, 2.00])
 
-AllName = ["CS_1","CS_2","CS_3","CS_4","CS_5"]
+AllName = ["CS_1","CS_2","CS_3"]#,"CS_4","CS_5"]
 AllName = [BaseLocation+"/"+Item for Item in AllName]
 
 #CS_8 is exomol
 
-AllError = [0,+1,-1,0,0,]
-AllBroadener = ["air","air", "air", "self", "air"]
-AllOmegaWidth = [50, 50, 50, 50, 500]
+AllError = [0,+1,-1]#,0,0,]
+AllBroadener = ["air","air", "air"]#, "self", "air"]
+AllOmegaWidth = [50, 50, 50]#,50, 500]
 
 #Note the resolution will be constant
-Molecules = ["CH4","CO", "H2", "N2", "H2O", "CH4", "CO2", "O3"]
+Molecules = ["CO", "H2", "N2", "H2O", "CH4", "CO2", "O3"]
 
 
 #Generate the cross section:
@@ -73,12 +73,9 @@ for Name, Error, Broadener, OmegaWidth in zip(AllName, AllError, AllBroadener, A
         SigmaMatrix = np.zeros((len(TemperatureGrid), len(PressureGrid), len(WaveNumberGrid)),  dtype=np.float32)
 
         for TCounter, TValue in enumerate(TemperatureGrid):
-            print("The temperature counter is given by::", TCounter)
+            print("Percentage Complete", int((TCounter+0.5)/len(TemperatureGrid))*100)
             for PCounter, PValue in enumerate(PressureGrid):
-
                 #check if error are different
-                StartTime = time.time()
-
                 if Error==0:
                     SigmaMatrix[TCounter, PCounter, :]  =  CalcCrossSection(Database,Temp=TValue,P = 10**PValue, \
                           Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\

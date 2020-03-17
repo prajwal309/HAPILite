@@ -102,7 +102,7 @@ def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, Broadening="Self", 
         elif NCORES>1.99:
             NUMCORES = int(NCORES)
 
-        print("Using %d cores for generating cross-section" %NUMCORES)
+        #print("Using %d cores for generating cross-section" %NUMCORES)
         CPU_Pool = mp.Pool(NUMCORES)
         Tasks = []
 
@@ -234,7 +234,6 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296.0, P=1.0, Broade
         GammaAir =  GammaAir[SelectIndex]*(1.0+ErrorValues[SelectIndex,2]*ErrorSTD)
         DeltaAir = DeltaAir[SelectIndex]*(1.0+ErrorValues[SelectIndex,5]*ErrorSTD)
         TempRatioPower = TempRatioPower[SelectIndex]*(1.0+ErrorValues[SelectIndex,4]*ErrorSTD)
-
 
 
         #how may threads to implement
