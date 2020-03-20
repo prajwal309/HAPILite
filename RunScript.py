@@ -69,25 +69,32 @@ for Name, Error, Broadener, OmegaWidth in zip(AllName, AllError, AllBroadener, A
 
         SaveMatrixName = Name+"/"+Molecule+".npy"
 
+        #If the name exists:
+        if os.path.exists(SaveMatrixName):
+            print(Molecule+" already exists")
+            continue
+
+        print("Starting generating cross-section for:", Molecule)
+
         Database = ReadData(Molecule, Location="data/")
         SigmaMatrix = np.zeros((len(TemperatureGrid), len(PressureGrid), len(WaveNumberGrid)),  dtype=np.float32)
 
         for TCounter, TValue in enumerate(TemperatureGrid):
-            print("Percentage Complete", int((TCounter+0.5)/len(TemperatureGrid))*100)
+            print("Percentage Complete:", int((TCounter+0.5)/len(TemperatureGrid)*100.))
             for PCounter, PValue in enumerate(PressureGrid):
                 #check if error are different
                 if Error==0:
                     SigmaMatrix[TCounter, PCounter, :]  =  CalcCrossSection(Database,Temp=TValue,P = 10**PValue, \
                           Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\
-                          OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=-1)[::-1]
+                          OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=12)[::-1]
                 elif Error == 1:
                     SigmaMatrix[TCounter, PCounter, :] = CalcCrossSectionWithError(Database, Temp=TempValue, P = P_Value, \
                          Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\
-                         OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=-1, Err="+1Sig")[::-1]
+                         OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=12, Err="+1Sig")[::-1]
                 elif Error == -1:
                     SigmaMatrix[TCounter, PCounter, :] = CalcCrossSectionWithError(Database, Temp=TempValue, P = P_Value, \
                          Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\
-                         OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=-1, Err="-1Sig")[::-1]
+                         OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=12, Err="-1Sig")[::-1]
 
         #Now save the matrix here
         np.save(SaveMatrixName, SigmaMatrix)
