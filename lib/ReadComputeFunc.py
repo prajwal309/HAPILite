@@ -65,7 +65,7 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
     P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor, Broadening = Params
     Broadening = Broadening.upper()
     i = 0
-    Xsect = np.zeros(len(Omegas))
+    Xsect = np.zeros(len(Omegas), dtype=np.float32)
     NLINES = len(LineCenterDB)
     for i in range(NLINES):
         LineCenter = LineCenterDB[i]
