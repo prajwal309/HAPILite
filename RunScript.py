@@ -5,7 +5,7 @@ import os
 from sys import getsizeof
 import time
 
-from HAPILite import CalcCrossSection
+from HAPILite import CalcCrossSection, CalcCrossSectionWithError
 from lib.ReadComputeFunc import ReadData
 
 #Base Location
@@ -32,7 +32,7 @@ AllName = [BaseLocation+"/"+Item for Item in AllName]
 
 #CS_8 is exomol
 
-AllError = [0,+1,-1]#,0,0,]
+AllError = [0, 1,-1]#,0,0,]
 AllBroadener = ["air","air", "air"]#, "self", "air"]
 AllOmegaWidth = [50, 50, 50]#,50, 500]
 
@@ -88,11 +88,11 @@ for Name, Error, Broadener, OmegaWidth in zip(AllName, AllError, AllBroadener, A
                           Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\
                           OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=12)[::-1]
                 elif Error == 1:
-                    SigmaMatrix[TCounter, PCounter, :] = CalcCrossSectionWithError(Database, Temp=TempValue, P = P_Value, \
+                    SigmaMatrix[TCounter, PCounter, :] = CalcCrossSectionWithError(Database, Temp=TValue, P = 10**PValue, \
                          Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\
                          OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=12, Err="+1Sig")[::-1]
                 elif Error == -1:
-                    SigmaMatrix[TCounter, PCounter, :] = CalcCrossSectionWithError(Database, Temp=TempValue, P = P_Value, \
+                    SigmaMatrix[TCounter, PCounter, :] = CalcCrossSectionWithError(Database, Temp=TValue, P = 10**PValue, \
                          Broadening=Broadener, WN_Grid=WaveNumberGrid, Profile="Voigt",\
                          OmegaWing=0.0, OmegaWingHW=OmegaWidth, NCORES=12, Err="-1Sig")[::-1]
 

@@ -87,11 +87,11 @@ def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, Broadening="Self", 
 
     #check for nans in the values
     NLINES = len(LineCenterDB)
+    Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor, Broadening]
 
     #how may threads to implement
     if NLINES<100 or NCORES==1:
         print("Using single core of generating cross-section")
-        Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor, Broadening]
         Xsect = GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergyDB,\
                                      GammaSelf, GammaAir, DeltaAir, TempRatioPower, LINE_PROFILE,\
                                      Params)
@@ -105,8 +105,6 @@ def CalcCrossSection(Database, DataPath = "", Temp=296, P=1, Broadening="Self", 
         #print("Using %d cores for generating cross-section" %NUMCORES)
         CPU_Pool = mp.Pool(NUMCORES)
         Tasks = []
-
-        Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor, Broadening]
         for i in range(NUMCORES):
             StartIndex = int(i*NLINES/NUMCORES)
             if i==NUMCORES-1:
@@ -186,11 +184,11 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296.0, P=1.0, Broade
             raise Exception("Error in HAPILite.py. The values allowed for Err are 0SIG, 1SIG, 2SIG, -1SIG, -2SIG.")
 
         #Unpack the database
-        MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, ErrorArray = Database
+        MoleculeNumberDB, IsoNumberDB, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, \
+        GammaSelf, GammaAir, DeltaAir, TempRatioPower, ErrorArray = Database
         ErrorValues = MapError(ErrorArray)
 
         #Replace nan with zero
-
         NLINES = len(LineCenterDB)
         #Units --- Not HITRAN Units
         factor = 1.0#(P/9.869233e-7)/(cBolts*Temp) #
@@ -235,11 +233,10 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296.0, P=1.0, Broade
         DeltaAir = DeltaAir[SelectIndex]*(1.0+ErrorValues[SelectIndex,5]*ErrorSTD)
         TempRatioPower = TempRatioPower[SelectIndex]*(1.0+ErrorValues[SelectIndex,4]*ErrorSTD)
 
-
+        Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor, Broadening]
         #how may threads to implement
-        if NLINES>1000 and NCORES==1:
+        if NCORES==1:
             #print("Using single core of generating cross-section")
-            Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor]
             Xsect = GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergyDB, GammaSelf, TempRatioPower, LINE_PROFILE, Params)
             return Xsect
         else:
@@ -251,8 +248,6 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296.0, P=1.0, Broade
             #print("Using %d cores for generating cross-section" %NUMCORES)
             CPU_Pool = mp.Pool(NUMCORES)
             Tasks = []
-
-            Params = [P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor]
             for i in range(NUMCORES):
                 StartIndex = int(i*NLINES/NUMCORES)
                 if i==NUMCORES-1:
@@ -265,15 +260,21 @@ def CalcCrossSectionWithError(Database, DataPath = "", Temp=296.0, P=1.0, Broade
                 LineIntensityDB_Slice = LineIntensityDB[StartIndex:StopIndex]
                 LowerStateEnergyDB_Slice = LowerStateEnergyDB[StartIndex:StopIndex]
                 GammaSelf_Slice = GammaSelf[StartIndex:StopIndex]
+                GammaAir_Slice =  GammaAir[StartIndex:StopIndex]
+                DeltaAir_Slice = DeltaAir[StartIndex:StopIndex]
                 TempRatioPower_Slice = TempRatioPower[StartIndex:StopIndex]
 
-                Tasks.append(CPU_Pool.apply_async(GenerateCrossSection, (Omegas, LineCenterDB_Slice, LineIntensityDB_Slice,
-                                                  LowerStateEnergyDB_Slice, GammaSelf_Slice, TempRatioPower_Slice, LINE_PROFILE, Params)))
+                Tasks.append(CPU_Pool.apply_async(GenerateCrossSection, (Omegas, LineCenterDB_Slice, \
+                            LineIntensityDB_Slice, LowerStateEnergyDB_Slice,\
+                            GammaSelf_Slice, GammaAir_Slice, DeltaAir_Slice,\
+                            TempRatioPower_Slice, LINE_PROFILE, Params)))
+
             CPU_Pool.close()
             CPU_Pool.join()
 
-            Xsect = np.zeros(len(Omegas))
+            Xsect = np.zeros(len(Omegas), dtype=np.float32)
             for task in Tasks:
                 Xsect+=task.get()
             return Xsect
-        return Xsect
+
+        return Xsect.astype(np.float32)

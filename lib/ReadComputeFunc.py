@@ -62,6 +62,7 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
     TempRatioPower: Parameter for scaling the self broadening parameters in temperature
     LINE_PROFILE: PROFILE_VOIGT, PROFILE_DOPPLER, PROFILE_LORENTZ are the
     """
+    
     P, Temp, OmegaWing, OmegaWingHW, m, SigmaT, SigmaTref, factor, Broadening = Params
     Broadening = Broadening.upper()
     i = 0
@@ -99,4 +100,5 @@ def GenerateCrossSection(Omegas, LineCenterDB, LineIntensityDB, LowerStateEnergy
         Xsect[BoundIndexLower:BoundIndexUpper] += factor*LineIntensity*lineshape_vals
 
         i+=1
+
     return Xsect

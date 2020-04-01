@@ -24,6 +24,7 @@ def GetWaveNumbers(StartWavelength=300, EndWavelength=30000, Resolution=100000):
         WaveNumberRange = np.array(sorted(WaveNumberRange))
         return WaveLengthValues, WaveNumberRange
 
+
 def BinModel(nu_HR,abs_HR,nu_Grid):
     '''
     This function takes a cross-section at high resolution:
