@@ -41,7 +41,7 @@ Molecules = ["CO", "H2", "N2", "H2O", "CH4", "CO2", "O3"]
 
 
 #Generate the cross section:
-Resolution = 2000000
+Resolution = 20000
 
 
 #Low resolution wavelength
